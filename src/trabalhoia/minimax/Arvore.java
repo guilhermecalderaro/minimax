@@ -1,20 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package trabalhoia.minimax;
 
-/**
- *
- * @author Gustavo
- */
-public class Arvore {
-    private No no;
+import NineMensMorris.GameInfo;
 
-    public Arvore(int[][] spots, int jogador, int profundidadeMaxima, int phase) {
+
+
+public class Arvore {
+    private No noInicial;
+
+    public Arvore(GameInfo info, int jogador, int profundidadeMaxima) {
         int profundidade = 0;
-        no = new No(spots, jogador, profundidadeMaxima, profundidade, phase);
+        boolean isLineInThisMove = false;
+        noInicial = new No(info, jogador, profundidadeMaxima, profundidade, isLineInThisMove);
     }
     
     

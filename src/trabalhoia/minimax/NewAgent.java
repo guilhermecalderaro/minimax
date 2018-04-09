@@ -1,65 +1,70 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package trabalhoia.minimax;
 
 import NineMensMorris.GameInfo;
 import NineMensMorris.PlayerAgent;
 import java.util.List;
 
-/**
- *
- * @author heck_
- */
+
+
 public class NewAgent implements PlayerAgent {
-    
-    public static int PHASE_1 = 1;
-    public static int PHASE_2 = 2;
-    public static int PHASE_3 = 3;
 
     @Override
     public String setPiece(GameInfo gi) {
+        //função que monta arvore
+        Arvore arvore = montaArvore(gi);
+        
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public String movePiece(GameInfo gi) {
+        //função que monta arvore
+        Arvore arvore = montaArvore(gi);
         
-       if(gi.getPlayer() == 1){
-           gi.getPlayerPieces() == 3;
-       }
-        montaArvore(gi, PHASE_2);
+        montaArvore(gi);
         
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public String removePiece(GameInfo gi) {
+        //função que monta arvore
+        Arvore arvore = montaArvore(gi);
+        
+        montaArvore(gi);
+        
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
     
-    public void montaArvore(GameInfo info, int phase){
-        int[][] spots = info.getSpots();
-        int jogador = info.getPlayer();
+    public Arvore montaArvore(GameInfo info){
+        //busca qual o jogador da rodada
+        int jogador = getPlayer();
+        
+        //Calculo para determinar qual melhor profundidade, para que seja eficiente e sem usar memoria em excesso 
         int profundidadeMaxima = calculoMelhorProfundidadeArvore(info);
         
-        Arvore arvore = new Arvore(spots, jogador, profundidadeMaxima, phase);
+        //instancia nova arvore com os parametros necessaríos
+        Arvore arvore = new Arvore(info, jogador, profundidadeMaxima);
+        
+        return arvore;
         
     }
     
     
-    
+    //Calculo para medir possibilidade de aumentar profundidade sem afetar desempenho do jogo
     public int calculoMelhorProfundidadeArvore(GameInfo info){
-        //Calculo para medir possibilidade de aumentar profundidade sem afetar desempenho do jogo
+        //calculo baseado em possibilidades de movimentos do jogador e oponente e na quantidade de peças, quanto menos peças
+        //e mais movimentos possiveis, maior será largura da arvore, portanto não pode ser tão comprida
         int calculo = (lenghtListMoves(info.getAllowedMoves()) * info.getEmptySpots().size()) + (lenghtListMoves(info.getOpponentAllowedMoves()) * info.getEmptySpots().size());
+        
         int profundidadeMaxima = 0;
-        if (calculo <100){
+        
+        //Escolha da profundidade baseada no calculo
+        if (calculo < 500){
             profundidadeMaxima = 5;
         }
-        else if(calculo <1000){
+        else if(calculo < 5000){
             profundidadeMaxima = 4;
         }
         else{
