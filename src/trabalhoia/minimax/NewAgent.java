@@ -7,6 +7,11 @@ import java.util.List;
 
 
 public class NewAgent implements PlayerAgent {
+    
+    public static int JOGADOR = 1;    
+    public static int OPONENTE = 2;
+    public static int VAZIO = 0;
+    
 
     @Override
     public String setPiece(GameInfo gi) {
@@ -39,13 +44,13 @@ public class NewAgent implements PlayerAgent {
     
     public Arvore montaArvore(GameInfo info){
         //busca qual o jogador da rodada
-        int jogador = getPlayer();
+        int jogador = 1;
         
         //Calculo para determinar qual melhor profundidade, para que seja eficiente e sem usar memoria em excesso 
         int profundidadeMaxima = calculoMelhorProfundidadeArvore(info);
         
         //instancia nova arvore com os parametros necessaríos
-        Arvore arvore = new Arvore(info, jogador, profundidadeMaxima);
+        Arvore arvore = new Arvore(info, profundidadeMaxima);
         
         return arvore;
         

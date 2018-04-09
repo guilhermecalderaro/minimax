@@ -8,8 +8,7 @@ import java.util.List;
 public final class EvaluationFunction {
     
     private GameInfo info;
-    public static int JOGADOR = 1;    
-    public static int OPONENTE = 2;
+    
 
 
     public EvaluationFunction(GameInfo info) {
@@ -18,36 +17,31 @@ public final class EvaluationFunction {
 
     
     public int phase1(boolean isLineInThisMove, int jogador) {
-        return evaluate(18, 26, 1, 9, 10, 7, 0, 0, -1, isLineInThisMove, jogador);
+        return evaluate(18, 26, 1, 9, 10, 7, 0, isLineInThisMove, jogador);
     }    
     
     public int phase2(boolean isLineInThisMove, int jogador) {
-        return evaluate(14, 43, 10, 11, 0, 0, 8, 1086, -1, isLineInThisMove, jogador);
+        return evaluate(14, 43, 10, 11, 0, 0, 8, isLineInThisMove, jogador);
     }    
     
     public int phase3(boolean isLineInThisMove, int jogador) {
-        return evaluate(16, 43, 10, 11, 0, 0, 8, 1086, -1, isLineInThisMove, jogador);
+        return evaluate(16, 43, 10, 11, 0, 0, 8, isLineInThisMove, jogador);
     }
     
-    private int evaluate(int w1, int w2, int w3, int w4, int w5, int w6, int w7, int w8,
-                         int whosWinning, boolean isLineInThisMove, int jogador ) {        
+    private int evaluate(int w1, int w2, int w3, int w4, int w5, int w6, int w7, boolean isLineInThisMove, int jogador ) {        
         
-        return w1 * (isLineInThisMove ? (jogador == 1 ? 1 : -1) : 0) +
-               w2 * (getLinesOfThree(JOGADOR) - getLinesOfThree(OPONENTE)) +
-               w3 * (getBlockedPieces(OPONENTE) - getBlockedPieces(JOGADOR)) +
+        return w1 * (isLineInThisMove ? (jogador == NewAgent.JOGADOR ? 1 : -1) : 0) +
+               w2 * (getTotalLinhasFechadas(NewAgent.JOGADOR) - getTotalLinhasFechadas(NewAgent.OPONENTE)) +
+               w3 * (getTotalPecasBloqueadas(NewAgent.OPONENTE) - getTotalPecasBloqueadas(NewAgent.JOGADOR)) +
                w4 * (info.getPlayerSpots().size() - info.getOpponentSpots().size()) +
                w5 * (0) +
                w6 * (getCornersOfThreeForPlayer() - getCornersOfThreeForOpponent()) +
-               w7 * (getCornersOfFiveForPlayer() - getCornersOfFiveForOpponent()) +
-               w8 * (whosWinning);
+               w7 * (getCornersOfFiveForPlayer() - getCornersOfFiveForOpponent());
     }
     
-    
-    public boolean isLineInThisMove(){
-        return false;
-    }
+
     /*Retorna total de linhas fechadas pelo jogador*/
-    public int getLinesOfThree(int jogador){
+    public int getTotalLinhasFechadas(int jogador){
 
         //Busca todos campos do tabuleiro que estão ocupados por uma peça do Jogador Atual;
         List<String> playerSpots =  jogador==1 ? this.info.getPlayerSpots() : this.info.getOpponentSpots();
@@ -115,7 +109,7 @@ public final class EvaluationFunction {
     }
     
     /*Retorna total de peças bloqueadas do jogador*/
-    public int getBlockedPieces(int jogador){
+    public int getTotalPecasBloqueadas(int jogador){
 
         //Busca todos campos do tabuleiro que estão ocupados por uma peça do Jogador Atual;
         List<String> playerSpots = jogador==1 ? this.info.getPlayerSpots() : this.info.getOpponentSpots();
