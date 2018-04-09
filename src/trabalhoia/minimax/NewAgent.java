@@ -25,15 +25,62 @@ public class NewAgent implements PlayerAgent {
         //instancia nova arvore com os parametros necessaríos
         Arvore arvore = new Arvore(info, profundidadeMaxima, SET);
         
+        int[][] melhorSpot = executeMinimax(arvore);
+        int[][] spot = info.getSpots();
         
-        return minimax(arvore.getNoInicial());
+        for(int i=0; i<3; i++){
+            for(int j=0; j<8; j++){
+                if((melhorSpot[i][j] == JOGADOR) && (spot[i][j] != JOGADOR)){
+                    return (i + "," + j);
+                }
+            }
+        }
+        
+        return "";
+        
+    }
+    
+    public int[][] executeMinimax(Arvore arvore){
+        
+        int selectedValue = getMinimax( arvore.getNoInicial() );
+        
+        for (No no : arvore.getNoInicial().getFilhos() ){
+            if (no.getAvaliacao() == selectedValue ){
+                return no.getSpots();
+            }
+        }
         
         
+        return null;
         
+    }
+    
+    
+    
+    private int getMinimax(No no ){
         
+        int valorMaximo = -999999999;
+        int valorMinimo = 999999999;
         
-        throw new UnsupportedOperationException("Not supported yet.");
-
+        if ( no.getFilhos().isEmpty() )
+        {
+            return no.getAvaliacao();
+        }
+        
+        for ( No filho : no.getFilhos() ){
+            
+            if (no.getJogador() == JOGADOR){
+                valorMaximo = filho.getAvaliacao() > valorMaximo ? getMinimax( filho ) : valorMaximo;
+            }
+            else{
+                valorMinimo = filho.getAvaliacao() < valorMinimo ? getMinimax( filho ) : valorMinimo;
+            }
+        }
+                
+        no.setAvaliacao(no.getJogador() == JOGADOR ? valorMaximo : valorMinimo);
+        
+        return no.getAvaliacao();
+                
     }
     
     public int minimax(No no, int alfa, int beta){

@@ -6,15 +6,9 @@ import NineMensMorris.GameInfo;
 
 public class Arvore {
     private No noInicial;
-
-//    public Arvore(GameInfo info, int[][] spots, int profundidadeMaxima) {
-//        int profundidade = 0;
-//        boolean isLineInThisMove = false;
-//        noInicial = new No(info, spots, profundidadeMaxima, profundidade, isLineInThisMove);
-//    }
     
     public Arvore(GameInfo info, int profundidadeMaxima, int movimento) {
-        int profundidade = 0;
+        int profundidade = -1;
         
         int[][] spots = info.getSpots();
                 
@@ -28,8 +22,10 @@ public class Arvore {
         if(movimento == NewAgent.REMOVE){
             isLineInThisMove = true;
         }
+        
+        int jogador = NewAgent.JOGADOR;
  
-        noInicial = new No(info, spots, profundidadeMaxima, profundidade, isLineInThisMove);
+        noInicial = new No(info, spots, jogador, profundidadeMaxima, profundidade, isLineInThisMove);
     }
 
     public No getNoInicial() {
