@@ -8,7 +8,7 @@ import java.util.List;
 public class No {
     
     private int[][] spots;
-    private int avaliacao;
+    private Integer avaliacao;
     private List<No> filhos;
     private boolean isLineInThisMove;
     private int profundidade;
@@ -55,11 +55,11 @@ public class No {
         this.spots = spots;
     }
 
-    public int getAvaliacao() {
+    public Integer getAvaliacao() {
         return avaliacao;
     }
 
-    public void setAvaliacao(int avaliacao) {
+    public void setAvaliacao(Integer avaliacao) {
         this.avaliacao = avaliacao;
     }
 
@@ -70,6 +70,24 @@ public class No {
     public void setFilhos(List<No> filhos) {
         this.filhos = filhos;
     }
+
+    public boolean isIsLineInThisMove() {
+        return isLineInThisMove;
+    }
+
+    public void setIsLineInThisMove(boolean isLineInThisMove) {
+        this.isLineInThisMove = isLineInThisMove;
+    }
+
+    public int getProfundidade() {
+        return profundidade;
+    }
+
+    public void setProfundidade(int profundidade) {
+        this.profundidade = profundidade;
+    }
+    
+    
 
     
     /*Se profundidade for impar então é o MAX, o MAX sempre é o JOGADOR
