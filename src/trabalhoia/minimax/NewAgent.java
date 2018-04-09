@@ -26,7 +26,7 @@ public class NewAgent implements PlayerAgent {
         Arvore arvore = new Arvore(info, profundidadeMaxima, SET);
         
         
-        //return minimax(arvore.getNoInicial());
+        return minimax(arvore.getNoInicial());
         
         
         
@@ -138,19 +138,6 @@ public class NewAgent implements PlayerAgent {
         
         
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    
-    public Arvore montaArvore(GameInfo info){
-        
-        //Calculo para determinar qual melhor profundidade, para que seja eficiente e sem usar memoria em excesso 
-        int profundidadeMaxima = calculoMelhorProfundidadeArvore(info);
-        
-        //instancia nova arvore com os parametros necessaríos
-        Arvore arvore = new Arvore(info, profundidadeMaxima);
-        
-        return arvore;
-        
     }
     
     

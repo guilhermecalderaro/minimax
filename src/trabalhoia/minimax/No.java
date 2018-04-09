@@ -20,10 +20,10 @@ public class No {
     profundidade maxima que a arvore pode abrangir, foi calculado anteriormente
     controle da profundidade em que o nó está sendo criado/inserido na arvore
     controle para saber se esse spot representa o fechamento de um trio(linha)*/
-    public No(GameInfo info, int profundidadeMaxima, int profundidade, boolean isLineInThisMove) {
+    public No(GameInfo info, int[][] spots, int profundidadeMaxima, int profundidade, boolean isLineInThisMove) {
         
         //salva o spot no nó
-        this.spots = info.getSpots();
+        this.spots = spots;
         
         //salva se é um nó com fechamento de trio
         this.isLineInThisMove = isLineInThisMove;
@@ -34,11 +34,11 @@ public class No {
         //Caso não tenha chegado na profundidade maxima, continua expandindo a arvore
         if (profundidade <= profundidadeMaxima){
             //Função em que gerará e adicionará as jogadas possiveis(lista de NÓ's) derivando do estado atual do tabuleiro
-            geraSpotsFilhos(profundidadeMaxima);
+            geraSpotsFilhos(profundidadeMaxima, info);
         }       
         else {
             //Caso ja tenha chegado no limite da arvore, pofundidade maxima, deve ser avaliado os NÓ's
-            avaliar(isLineInThisMove);
+            avaliar(isLineInThisMove, info);
         }
     }
     
@@ -96,32 +96,30 @@ public class No {
         return (NewAgent.isImpar(this.profundidade)) ? NewAgent.JOGADOR : NewAgent.OPONENTE;
     }
     
-    private List<String> opcoesRemocao(){
-        GameInfo info = new GameInfo(this.spots);
+    private List<String> opcoesRemocao(GameInfo info){
+
+        /*Ternario para verificar qual jogador fechou o trio,
+        se foi jogador então retorna peças que são possiveis de ser removidas do oponente,
+        se foi oponente então retorna as peças que são possiveis de ser removidas do jogador*/
+        return (getJogador() == NewAgent.JOGADOR) ? info.getAllowedRemoves(this.spots) : info.getOpponentAllowedRemoves(this.spots);
+    }
+    
+    private List<String> opcoesMovimento(GameInfo info){
             
         /*Ternario para verificar qual jogador fechou o trio,
         se foi jogador então retorna peças que são possiveis de ser removidas do oponente,
         se foi oponente então retorna as peças que são possiveis de ser removidas do jogador*/
-        return (getJogador() == NewAgent.JOGADOR) ? info.getAllowedRemoves() : info.getOpponentAllowedRemoves();
-    }
-    
-    private List<String> opcoesMovimento(){
-        GameInfo info = new GameInfo(this.spots);
-            
-        /*Ternario para verificar qual jogador fechou o trio,
-        se foi jogador então retorna peças que são possiveis de ser removidas do oponente,
-        se foi oponente então retorna as peças que são possiveis de ser removidas do jogador*/
-        return (getJogador() == NewAgent.JOGADOR) ? info.getAllowedMoves(): info.getOpponentAllowedMoves();
+        return (getJogador() == NewAgent.JOGADOR) ? info.getAllowedMoves(this.spots): info.getOpponentAllowedMoves(this.spots);
     }
     
     
-    public void geraSpotsFilhos(int profundidadeMaxima){
+    public void geraSpotsFilhos(int profundidadeMaxima, GameInfo info){
         
         //Verifica se ultimo nó fechou um trio(linha), se sim o procimo nó deve ser um de remoção de peça
         if(isLineInThisMove){
             
             //Ternario para verificar qual jogador fechou o trio, se foi jogador então pega peças que são possiveis de ser removidas do oponente, senão vice-versa
-            List<String> allowedRemoves = opcoesRemocao();
+            List<String> allowedRemoves = opcoesRemocao(info);
             
             //Percorre todas opções de remoção de peça, para que seja criado um nó para cada uma
             for(int i=0; i<allowedRemoves.size(); i++){
@@ -136,13 +134,10 @@ public class No {
                 //remove peça do tabuleiro no spot(linha,coluna) determinado acima
                 novoSpot[linha][coluna] = NewAgent.VAZIO;
                 
-                //Gera game info a partir da nova configuração das peças no tabuleiro(spots)
-                GameInfo infoNovo = new GameInfo(novoSpot);
-                
                 //Verifica de quem é a vez, caso jogador
                 if (getJogador() == NewAgent.JOGADOR){
                     //Verifica se a quantidade de peças do oponente é menor que 3, o que resultaria em um estado de vitória
-                    if(infoNovo.getOpponentSpots().size() < 3){
+                    if(info.getOpponentSpots(novoSpot).size() < 3){
                         this.avaliacao = 5000;
                     }
                     //Senão continua a expandir a arvore normalmente
@@ -151,7 +146,7 @@ public class No {
                         boolean isLineInThisMove = false;                
 
                         //Adição do filho gerado na arvore
-                        No noFilho = new No(infoNovo, profundidadeMaxima, this.profundidade, isLineInThisMove);
+                        No noFilho = new No(info, novoSpot, profundidadeMaxima, this.profundidade, isLineInThisMove);
                         filhos.add(noFilho);
                     }
                         
@@ -159,7 +154,7 @@ public class No {
                 //Senão, se for oponente
                 else{
                     //Verifica se a quantidade de peças do jogador é menor que 3, o que resultaria em um estado de vitória
-                    if(infoNovo.getPlayerSpots().size() < 3){
+                    if(info.getPlayerSpots(novoSpot).size() < 3){
                         this.avaliacao = -5000;
                     }
                     //Senão continua a expandir a arvore normalmente
@@ -168,7 +163,7 @@ public class No {
                         boolean isLineInThisMove = false;                
 
                         //Adição do filho gerado na arvore
-                        No noFilho = new No(infoNovo, profundidadeMaxima, this.profundidade, isLineInThisMove);
+                        No noFilho = new No(info, novoSpot, profundidadeMaxima, this.profundidade, isLineInThisMove);
                         filhos.add(noFilho);
                     }
                 }      
@@ -178,7 +173,7 @@ public class No {
         else{
         
             ////Ternario para verificar de qual jogador deve ser pego os movimentos
-            List<String> allowedMoves = opcoesMovimento();
+            List<String> allowedMoves = opcoesMovimento(info);
 
             //Percorre lista de movimentos possiveis
             for(int i=0; i<allowedMoves.size(); i++){
@@ -209,15 +204,13 @@ public class No {
 
                     //Adiciona a peça com numeração do jogador dono da peça
                     novoSpot[linha][coluna] = getJogador();
-
-                    //Gera game info para a nova configuração de spots do tabuleiro
-                    GameInfo infoNovo = new GameInfo(novoSpot);
+                    
                     
                     //Verifica se a peça movimentada, a nova posição da peça gerou um trio(linha)
-                    boolean isLineInThisMove = (getJogador() == NewAgent.JOGADOR) ? infoNovo.isPlayerLineOfThree(linha+","+coluna): infoNovo.isOpponentLineOfThree(linha+","+coluna);
+                    boolean isLineInThisMove = (getJogador() == NewAgent.JOGADOR) ? info.isPlayerLineOfThree((linha + "," + coluna), novoSpot): info.isOpponentLineOfThree((linha + "," + coluna), novoSpot);
                     
                     //Adição do filho gerado na arvore
-                    No noFilho = new No(infoNovo, profundidadeMaxima, profundidade, isLineInThisMove);
+                    No noFilho = new No(info, novoSpot, profundidadeMaxima, profundidade, isLineInThisMove);
                     filhos.add(noFilho);
 
                 } 
@@ -225,36 +218,36 @@ public class No {
         }
     }
 
-    public void avaliar(boolean isLineInThisMove){
+    public void avaliar(boolean isLineInThisMove, GameInfo info){
         //Instancia um Game Info
-        GameInfo info = new GameInfo(this.spots);
+        //GameInfo info = new GameInfo(this.spots);
         
         //Instancia a classe de avaliação
-        EvaluationFunction avaliacao = new EvaluationFunction(info);
+        EvaluationFunction avaliacao = new EvaluationFunction(this.spots);
         
         //Verifica de quem é a vez de jogar
         //Caso jogador 1, faz as condiçoes baseadas nas informaçoes das peças dele no tabuleiro
         if (getJogador() == NewAgent.JOGADOR){
-            if (info.getPiecesToPlace() > 0){
-                this.avaliacao = avaliacao.phase1(isLineInThisMove, NewAgent.JOGADOR);
+            if ((info.getPiecesToPlace() - profundidade) > 0){
+                this.avaliacao = avaliacao.phase1(isLineInThisMove, NewAgent.JOGADOR, info);
             }
-            else if(info.getPlayerSpots().size() > 3){
-                this.avaliacao = avaliacao.phase2(isLineInThisMove, NewAgent.JOGADOR);
+            else if(info.getPlayerSpots(this.spots).size() > 3){
+                this.avaliacao = avaliacao.phase2(isLineInThisMove, NewAgent.JOGADOR, info);
             }
             else{
-                this.avaliacao = avaliacao.phase3(isLineInThisMove, NewAgent.JOGADOR);
+                this.avaliacao = avaliacao.phase3(isLineInThisMove, NewAgent.JOGADOR, info);
             }
         }
         //Senão, faz as condiçoes baseadas nas informações das peças do oponente
         else{
-            if (info.getOpponentPiecesToPlace() > 0){
-                this.avaliacao = avaliacao.phase1(isLineInThisMove, NewAgent.OPONENTE);
+            if ((info.getOpponentPiecesToPlace() - profundidade) > 0){
+                this.avaliacao = avaliacao.phase1(isLineInThisMove, NewAgent.OPONENTE, info);
             }
-            else if(info.getOpponentSpots().size() > 3){
-                this.avaliacao = avaliacao.phase2(isLineInThisMove, NewAgent.OPONENTE);
+            else if(info.getOpponentSpots(this.spots).size() > 3){
+                this.avaliacao = avaliacao.phase2(isLineInThisMove, NewAgent.OPONENTE, info);
             }
             else{
-                this.avaliacao = avaliacao.phase3(isLineInThisMove, NewAgent.OPONENTE);
+                this.avaliacao = avaliacao.phase3(isLineInThisMove, NewAgent.OPONENTE, info);
             }
         }
     }

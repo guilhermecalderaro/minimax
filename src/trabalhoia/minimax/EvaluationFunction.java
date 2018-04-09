@@ -7,7 +7,7 @@ import java.util.List;
 
 public final class EvaluationFunction {
     
-    private GameInfo info;
+    private int spots[][];
     
     private static int COLUNA_ZERO = 0;
     private static int COLUNA_SETE = 7;
@@ -17,32 +17,32 @@ public final class EvaluationFunction {
     
 
 
-    public EvaluationFunction(GameInfo info) {
-        this.info = info;
+    public EvaluationFunction(int[][] spots) {
+        this.spots = spots;
     }
 
     
-    public int phase1(boolean isLineInThisMove, int jogador) {
-        return evaluate(18, 26, 1, 9, 10, 7, 0, isLineInThisMove, jogador);
+    public int phase1(boolean isLineInThisMove, int jogador, GameInfo info) {
+        return evaluate(18, 26, 1, 9, 10, 7, 0, isLineInThisMove, jogador, info);
     }    
     
-    public int phase2(boolean isLineInThisMove, int jogador) {
-        return evaluate(14, 43, 10, 11, 0, 0, 8, isLineInThisMove, jogador);
+    public int phase2(boolean isLineInThisMove, int jogador, GameInfo info) {
+        return evaluate(14, 43, 10, 11, 0, 0, 8, isLineInThisMove, jogador, info);
     }    
     
-    public int phase3(boolean isLineInThisMove, int jogador) {
-        return evaluate(16, 43, 10, 11, 0, 0, 8, isLineInThisMove, jogador);
+    public int phase3(boolean isLineInThisMove, int jogador, GameInfo info) {
+        return evaluate(16, 43, 10, 11, 0, 0, 8, isLineInThisMove, jogador, info);
     }
     
-    private int evaluate(int w1, int w2, int w3, int w4, int w5, int w6, int w7, boolean isLineInThisMove, int jogador ) {        
+    private int evaluate(int w1, int w2, int w3, int w4, int w5, int w6, int w7, boolean isLineInThisMove, int jogador, GameInfo info ) {        
         
         return w1 * (isLineInThisMove ? (jogador == NewAgent.JOGADOR ? 1 : -1) : 0) +
-               w2 * (getTotalLinhasFechadas(NewAgent.JOGADOR) - getTotalLinhasFechadas(NewAgent.OPONENTE)) +
-               w3 * (getTotalPecasAdversariaBloqueadas(NewAgent.OPONENTE) - getTotalPecasAdversariaBloqueadas(NewAgent.JOGADOR)) +
-               w4 * (info.getPlayerSpots().size() - info.getOpponentSpots().size()) +
+               w2 * (getTotalLinhasFechadas(NewAgent.JOGADOR, info) - getTotalLinhasFechadas(NewAgent.OPONENTE, info)) +
+               w3 * (getTotalPecasAdversariaBloqueadas(NewAgent.OPONENTE, info) - getTotalPecasAdversariaBloqueadas(NewAgent.JOGADOR, info)) +
+               w4 * (info.getPlayerSpots(this.spots).size() - info.getOpponentSpots(this.spots).size()) +
                w5 * (0) +
-               w6 * (getQuantidadeLTresPecas(NewAgent.JOGADOR) - getQuantidadeLTresPecas(NewAgent.OPONENTE)) +
-               w7 * (getQuantidadeLCincoPecas(NewAgent.JOGADOR) - getQuantidadeLCincoPecas(NewAgent.OPONENTE));
+               w6 * (getQuantidadeLTresPecas(NewAgent.JOGADOR, info) - getQuantidadeLTresPecas(NewAgent.OPONENTE, info)) +
+               w7 * (getQuantidadeLCincoPecas(NewAgent.JOGADOR, info) - getQuantidadeLCincoPecas(NewAgent.OPONENTE, info));
     }
     
     private int proximaCasa(int numero){
@@ -69,10 +69,10 @@ public final class EvaluationFunction {
     
 
     /*Retorna total de linhas fechadas pelo jogador*/
-    public int getTotalLinhasFechadas(int jogador){
+    public int getTotalLinhasFechadas(int jogador, GameInfo info){
 
         //Busca todos campos do tabuleiro que estão ocupados por uma peça do Jogador Atual, Jogador ou Oponente;
-        List<String> playerSpots =  jogador == NewAgent.JOGADOR ? this.info.getPlayerSpots() : this.info.getOpponentSpots();
+        List<String> playerSpots =  jogador == NewAgent.JOGADOR ? info.getPlayerSpots(this.spots) : info.getOpponentSpots(this.spots);
         
         /*Inicialização da variavel count(contadora) que irá contar, e retornar no final do método quantas
         linhas de três estão formadas no tabuleiro a favor do Jogador*/
@@ -121,13 +121,13 @@ public final class EvaluationFunction {
     
     
     /*Retorna total de peças bloqueadas do jogador*/
-    public int getTotalPecasAdversariaBloqueadas(int jogador){
+    public int getTotalPecasAdversariaBloqueadas(int jogador, GameInfo info){
 
         //Busca todos campos do tabuleiro que estão ocupados por uma peça do Adversário;
-        List<String> playerSpots = (jogador == NewAgent.JOGADOR) ? this.info.getOpponentSpots() :this.info.getPlayerSpots();
+        List<String> playerSpots = (jogador == NewAgent.JOGADOR) ? info.getOpponentSpots(this.spots) : info.getPlayerSpots(this.spots);
         
         //Busca todos campos do tabuleiro que estão livres(sem nenhuma peça tanto do Jogador quanto Oponente)
-        List<String> emptySpots = this.info.getEmptySpots();
+        List<String> emptySpots = info.getEmptySpots(this.spots);
         
         /*Inicialização da variavel count(contadora) que irá contar, e retornar no final do método quantas
         linhas de três estão formadas no tabuleiro a favor do Jogador*/
@@ -201,12 +201,12 @@ public final class EvaluationFunction {
     
     
     //Quantidade de vezes que o Jogador atual possui de L de três peças
-    private int getQuantidadeLTresPecas(int jogador) {
+    private int getQuantidadeLTresPecas(int jogador, GameInfo info) {
         //Busca todos campos do tabuleiro que estão ocupados por uma peça do Adversário;
-        List<String> playerSpots = (jogador == NewAgent.JOGADOR) ? this.info.getOpponentSpots() :this.info.getPlayerSpots();
+        List<String> playerSpots = (jogador == NewAgent.JOGADOR) ? info.getOpponentSpots(this.spots) : info.getPlayerSpots(this.spots);
         
         //Busca todos campos do tabuleiro que estão livres(sem nenhuma peça tanto do Jogador quanto Oponente)
-        List<String> emptySpots = this.info.getEmptySpots();
+        List<String> emptySpots = info.getEmptySpots(this.spots);
         
         /*Inicialização da variavel count(contadora) que irá contar, e retornar no final do método quantas
         linhas em L de três peças estão formadas no tabuleiro a favor do Jogador Atual*/
@@ -305,9 +305,9 @@ public final class EvaluationFunction {
     
     
     //Quantidade de vezes que o Jogador atual possui de L de cinco peças
-    private int getQuantidadeLCincoPecas(int jogador) {
+    private int getQuantidadeLCincoPecas(int jogador, GameInfo info) {
         //Busca todos campos do tabuleiro que estão ocupados por uma peça do Adversário;
-        List<String> playerSpots = (jogador == NewAgent.JOGADOR) ? this.info.getOpponentSpots() :this.info.getPlayerSpots();
+        List<String> playerSpots = (jogador == NewAgent.JOGADOR) ? info.getOpponentSpots(this.spots) : info.getPlayerSpots(this.spots);
         
         /*Inicialização da variavel count(contadora) que irá contar, e retornar no final do método quantas
         linhas em L de cindo peças estão formadas no tabuleiro a favor do Jogador Atual*/
