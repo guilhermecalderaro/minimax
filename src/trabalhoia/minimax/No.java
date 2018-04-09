@@ -70,19 +70,12 @@ public class No {
     public void setFilhos(List<No> filhos) {
         this.filhos = filhos;
     }
-    
-    private boolean isImpar(int numero){
-        return (numero % 2) == 1 ? true : false;
-    }
-    
-    private boolean isPar(int numero){
-        return (numero % 2) == 1 ? true : false;
-    }
+
     
     /*Se profundidade for impar então é o MAX, o MAX sempre é o JOGADOR
       Se profundidade for par então é o MIN, o MIN sempre é o OPONENTE*/
     private int getJogador(){
-        return isImpar(this.profundidade) ? NewAgent.JOGADOR : NewAgent.OPONENTE;
+        return (NewAgent.isImpar(this.profundidade)) ? NewAgent.JOGADOR : NewAgent.OPONENTE;
     }
     
     private List<String> opcoesRemocao(){

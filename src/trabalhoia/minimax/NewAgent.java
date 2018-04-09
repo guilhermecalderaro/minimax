@@ -94,4 +94,12 @@ public class NewAgent implements PlayerAgent {
         
     }
     
+    public static boolean isImpar(int numero){
+        return (numero % 2) == 1 ? true : false;
+    }
+    
+    public static boolean isPar(int numero){
+        return (numero % 2) == 1 ? true : false;
+    }
+    
 }
