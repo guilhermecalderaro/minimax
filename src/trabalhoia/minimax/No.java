@@ -10,9 +10,9 @@ public class No {
     private int[][] spots;
     private Integer avaliacao;
     private List<No> filhos;
-    private boolean isLineInThisMove;
     private int profundidade;
     private int jogador;
+    private String pecaAlterada;
     
     
     
@@ -21,29 +21,46 @@ public class No {
     profundidade maxima que a arvore pode abrangir, foi calculado anteriormente
     controle da profundidade em que o nó está sendo criado/inserido na arvore
     controle para saber se esse spot representa o fechamento de um trio(linha)*/
-    public No(GameInfo info, int[][] spots, int jogador, int profundidadeMaxima, int profundidade, boolean isLineInThisMove) {
+    public No(GameInfo info, int[][] spots, int jogador, int profundidadeMaxima, int profundidade, String pecaAlterada) {
         
-        //salva o spot no nó
-        this.spots = spots;
-        
-        //salva se é um nó com fechamento de trio
-        this.isLineInThisMove = isLineInThisMove;
-        
-        //Acrescenta a profundidade, para chegar na profundidade correspondente e salva no nó
-        setProfundidade(profundidade + 1);
-        
+        this.spots = spots;//salva o spot no nó
+        this.pecaAlterada = pecaAlterada;
+        this.profundidade = profundidade; 
         this.jogador = jogador;
         
+        
+        
+        
         //Caso não tenha chegado na profundidade maxima, continua expandindo a arvore
-        if (getProfundidade() <= profundidadeMaxima){
+        if (this.profundidade <= profundidadeMaxima){
             //Função em que gerará e adicionará as jogadas possiveis(lista de NÓ's) derivando do estado atual do tabuleiro
             geraSpotsFilhos(profundidadeMaxima, info);
-            
-            System.out.println("teste");
         }       
         else {
             //Caso ja tenha chegado no limite da arvore, pofundidade maxima, deve ser avaliado os NÓ's
-            avaliar(isLineInThisMove, info);
+            avaliar(info);
+        }
+    }
+    
+    
+    
+    public No(GameInfo info, int[][] spots, int jogador, int profundidade, String pecaAlterada) {
+        
+        this.spots = spots; //salva o spot no nó
+        this.pecaAlterada = pecaAlterada;
+        this.profundidade = profundidade; 
+        this.jogador = jogador;
+        
+        
+        
+        //Caso não tenha chegado na profundidade maxima, continua expandindo a arvore
+        if (getProfundidade() <= NewAgent.PROFUNIDADE_MAXIMA){
+            //Função em que gerará e adicionará as jogadas possiveis(lista de NÓ's) derivando do estado atual do tabuleiro
+            geraSpotsFilhos(info);
+        }       
+        else {
+            //Caso ja tenha chegado no limite da arvore, pofundidade maxima, deve ser avaliado os NÓ's
+            avaliar(info);
         }
     }
     
@@ -76,12 +93,12 @@ public class No {
         this.filhos = filhos;
     }
 
-    public boolean isIsLineInThisMove() {
-        return isLineInThisMove;
+    public String getPecaAlterada() {
+        return pecaAlterada;
     }
 
-    public void setIsLineInThisMove(boolean isLineInThisMove) {
-        this.isLineInThisMove = isLineInThisMove;
+    public void setPecaAlterada(String pecaAlterada) {
+        this.pecaAlterada = pecaAlterada;
     }
 
     public int getProfundidade() {
@@ -92,37 +109,47 @@ public class No {
         this.profundidade = profundidade;
     }
     
-    
+    public int getJogador() {
+        return jogador;
+    }
+
+    public void setJogador(int jogador) {
+        this.jogador = jogador;
+    }
     
     
 
     
-    /*Se profundidade for impar então é o MAX, o MAX sempre é o JOGADOR
-      Se profundidade for par então é o MIN, o MIN sempre é o OPONENTE*/
-//    private int getJogador(){
-//        return (NewAgent.isImpar(this.profundidade)) ? NewAgent.JOGADOR : NewAgent.OPONENTE;
-//    }
     
-    private List<String> opcoesRemocao(GameInfo info){
+    
+    
+    
+    
+    
+    private List<String> opcoesRemoverPeca(GameInfo info){
 
         /*Ternario para verificar qual jogador fechou o trio,
         se foi jogador então retorna peças que são possiveis de ser removidas do oponente,
         se foi oponente então retorna as peças que são possiveis de ser removidas do jogador*/
-        return (getJogador() == NewAgent.JOGADOR) ? info.getAllowedRemoves(this.spots) : info.getOpponentAllowedRemoves(this.spots);
+        return (getJogador() == NewAgent.JOGADOR) ? info.getAllowedRemoves(getSpots()) : info.getOpponentAllowedRemoves(getSpots());
     }
     
-    private List<String> opcoesMovimento(GameInfo info){
+    
+    
+    private List<String> opcoesMovimentarPeca(GameInfo info){
             
         /*Ternario para verificar qual jogador fechou o trio,
         se foi jogador então retorna peças que são possiveis de ser removidas do oponente,
         se foi oponente então retorna as peças que são possiveis de ser removidas do jogador*/
-        return (getJogador() == NewAgent.JOGADOR) ? info.getAllowedMoves(this.spots): info.getOpponentAllowedMoves(this.spots);
+        return (getJogador() == NewAgent.JOGADOR) ? info.getAllowedMoves(getSpots()): info.getOpponentAllowedMoves(getSpots());
     }
+    
+    
     
     private List<String> opcoesAdicionarPeca(GameInfo info){
             
         if(((info.getPiecesToPlace() - (getProfundidade() - 1)) > 0) || ((info.getOpponentPiecesToPlace() - (getProfundidade() - 1)) > 0)){
-            return info.getEmptySpots(this.spots);
+            return info.getEmptySpots(getSpots());
         }
         
         return null;
@@ -130,19 +157,36 @@ public class No {
     }
     
     
+    
+    public boolean fechouLinha(GameInfo info){
+        
+        return (getJogador() == NewAgent.JOGADOR)? info.isPlayerLineOfThree(getPecaAlterada(), getSpots()) : info.isOpponentLineOfThree(getPecaAlterada(), getSpots());
+    
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public void geraSpotsFilhos(int profundidadeMaxima, GameInfo info){
         
         //Verifica se ultimo nó fechou um trio(linha), se sim o procimo nó deve ser um de remoção de peça
-        if(isLineInThisMove){
+        if(fechouLinha(info)){
             
             //Ternario para verificar qual jogador fechou o trio, se foi jogador então pega peças que são possiveis de ser removidas do oponente, senão vice-versa
-            List<String> allowedRemoves = opcoesRemocao(info);
+            List<String> allowedRemoves = opcoesRemoverPeca(info);
             
             //Percorre todas opções de remoção de peça, para que seja criado um nó para cada uma
             for(int i=0; i<allowedRemoves.size(); i++){
                 
                 //Duplica tabuleiro pai
-                int[][] novoSpot = this.spots;
+                int[][] novoSpot = getSpots();
                 
                 //Percorre lista de possibilidades e salva linha e coluna do respectivo indice da lista
                 int linha = Integer.parseInt(""+allowedRemoves.get(i).charAt(0));
@@ -151,43 +195,31 @@ public class No {
                 //remove peça do tabuleiro no spot(linha,coluna) determinado acima
                 novoSpot[linha][coluna] = NewAgent.VAZIO;
                 
-                //Verifica de quem é a vez, caso jogador
-                if (getJogador() == NewAgent.JOGADOR){
-                    //Verifica se a quantidade de peças do oponente é menor que 3, o que resultaria em um estado de vitória
-                    if(info.getOpponentSpots(novoSpot).size() < 3){
-                        this.avaliacao = 5000;
-                    }
-                    //Senão continua a expandir a arvore normalmente
-                    else{
-                        //Como acabou de fazer remoção de uma peça, essa jogada n foi de movimento, portanto não pode ter fecado um trio(linha)
-                        boolean isLineInThisMove = false;  
-                        
+                String novaPecaAlterada = (linha + "," + coluna);
 
-                        //Adição do filho gerado na arvore
-                        No noFilho = new No(info, novoSpot, NewAgent.JOGADOR, profundidadeMaxima, this.profundidade, isLineInThisMove);
-                        filhos.add(noFilho);
-                    }
-                        
+                if((info.getOpponentSpots(novoSpot).size() < 3) || (info.getOpponentSpots(novoSpot).size() < 3)){
+                    
+                    EvaluationFunction avaliador = new EvaluationFunction(info, getSpots());
+                    
+                    setAvaliacao(avaliador.vitoria(getJogador()));
+                    
                 }
-                //Senão, se for oponente
+                //Senão continua a expandir a arvore normalmente
                 else{
-                    //Verifica se a quantidade de peças do jogador é menor que 3, o que resultaria em um estado de vitória
-                    if(info.getPlayerSpots(novoSpot).size() < 3){
-                        this.avaliacao = -5000;
-                    }
-                    //Senão continua a expandir a arvore normalmente
-                    else{
-                        //Como acabou de fazer remoção de uma peça, essa jogada n foi de movimento, portanto não pode ter fecado um trio(linha)
-                        boolean isLineInThisMove = false;                
 
-                        //Adição do filho gerado na arvore
-                        No noFilho = new No(info, novoSpot, NewAgent.OPONENTE, profundidadeMaxima, this.profundidade, isLineInThisMove);
-                        filhos.add(noFilho);
-                    }
-                }      
+                    //Inverte jogador
+                    int proximoJogador = (getJogador() == NewAgent.JOGADOR) ? NewAgent.OPONENTE : NewAgent.JOGADOR;
+                    
+                    int novaProfundidade = getProfundidade() + 1;
+                    
+                    //Adição do filho gerado na arvore
+                    No noFilho = new No(info, novoSpot, proximoJogador, profundidadeMaxima, novaProfundidade, novaPecaAlterada);
+                    filhos.add(noFilho);
+                    
+                }
             }
         }
-        else if(opcoesAdicionarPeca(info) != null && !opcoesAdicionarPeca(info).isEmpty()){
+        else if(!opcoesAdicionarPeca(info).isEmpty()){
             ////Ternario para verificar de qual jogador deve ser pego os movimentos
             List<String> allowedSets = opcoesAdicionarPeca(info);
 
@@ -195,23 +227,25 @@ public class No {
             for(int i=0; i<allowedSets.size(); i++){
                 
                 //Duplica tabuleiro pai
-                int[][] novoSpot = this.spots;
+                int[][] novoSpot = getSpots();
                 
-                //Percorre lista de possibilidades e salva linha e coluna do respectivo indice da lista
+                //Salva linha e coluna do respectivo indice da lista
                 int linha = Integer.parseInt(""+allowedSets.get(i).charAt(0));
                 int coluna = Integer.parseInt(""+allowedSets.get(i).charAt(2));
                 
-                //
+                //Adiciona peça ao tabuleiro
                 novoSpot[linha][coluna] = getJogador();
                 
+                
+                String novaPecaAlterada = (linha + "," + coluna);
+
                 //Inverte jogador, se for Max agora, será Min na proxima, e vice-versa
-                int jogador = (this.jogador == NewAgent.JOGADOR) ? NewAgent.OPONENTE : NewAgent.JOGADOR;
-
-                //Verifica se a peça movimentada, a nova posição da peça gerou um trio(linha)
-                boolean isLineInThisMove = (getJogador() == NewAgent.JOGADOR) ? info.isPlayerLineOfThree((linha + "," + coluna), novoSpot): info.isOpponentLineOfThree((linha + "," + coluna), novoSpot);
-
+                int proximoJogador = (this.jogador == NewAgent.JOGADOR) ? NewAgent.OPONENTE : NewAgent.JOGADOR;
+                
+                int novaProfundidade = getProfundidade() + 1;
+                
                 //Adição do filho gerado na arvore
-                No noFilho = new No(info, novoSpot, jogador, profundidadeMaxima, getProfundidade(), isLineInThisMove);
+                No noFilho = new No(info, novoSpot, proximoJogador, profundidadeMaxima, novaProfundidade, novaPecaAlterada);
                 this.filhos.add(noFilho);
                 
                       
@@ -221,7 +255,7 @@ public class No {
         else{
         
             ////Ternario para verificar de qual jogador deve ser pego os movimentos
-            List<String> allowedMoves = opcoesMovimento(info);
+            List<String> allowedMoves = opcoesMovimentarPeca(info);
 
             //Percorre lista de movimentos possiveis
             for(int i=0; i<allowedMoves.size(); i++){
@@ -237,7 +271,7 @@ public class No {
                 for(int j=1; j<parts.length; j++){
                     
                     //Duplica spots pai
-                    int[][] novoSpot = this.spots;
+                    int[][] novoSpot = getSpots();
 
                     //Pega posição(linha,coluna) atual da peça
                     int linha =  Integer.parseInt(""+parts[0].charAt(0));
@@ -253,60 +287,194 @@ public class No {
                     //Adiciona a peça com numeração do jogador dono da peça
                     novoSpot[linha][coluna] = getJogador();
                     
-                    //Inverte jogador, se for Max agora, será Min na proxima, e vice-versa
-                    int jogador = (this.jogador == NewAgent.JOGADOR) ? NewAgent.OPONENTE : NewAgent.JOGADOR;
                     
-                    //Verifica se a peça movimentada, a nova posição da peça gerou um trio(linha)
-                    boolean isLineInThisMove = (getJogador() == NewAgent.JOGADOR) ? info.isPlayerLineOfThree((linha + "," + coluna), novoSpot): info.isOpponentLineOfThree((linha + "," + coluna), novoSpot);
+                    String novaPecaAlterada = (linha + "," + coluna);
+                    
+                    //Inverte jogador, se for Max agora, será Min na proxima, e vice-versa
+                    int proximoJogador = (this.jogador == NewAgent.JOGADOR) ? NewAgent.OPONENTE : NewAgent.JOGADOR;
+                    
+                    int novaProfundidade = getProfundidade() + 1;
                     
                     //Adição do filho gerado na arvore
-                    No noFilho = new No(info, novoSpot, jogador, profundidadeMaxima, profundidade, isLineInThisMove);
+                    No noFilho = new No(info, novoSpot, proximoJogador, profundidadeMaxima, novaProfundidade, novaPecaAlterada);
                     filhos.add(noFilho);
 
                 } 
             }
         }
     }
+    
+     
+    public void geraSpotsFilhos(GameInfo info){
+        
+        //Verifica se ultimo nó fechou um trio(linha), se sim o procimo nó deve ser um de remoção de peça
+        if(fechouLinha(info) || getPecaAlterada().contains("remover")){
+            
+            //Ternario para verificar qual jogador fechou o trio, se foi jogador então pega peças que são possiveis de ser removidas do oponente, senão vice-versa
+            List<String> allowedRemoves = opcoesRemoverPeca(info);
+            
+            //Percorre todas opções de remoção de peça, para que seja criado um nó para cada uma
+            for(int i=0; i<allowedRemoves.size(); i++){
+                
+                //Duplica tabuleiro pai
+                int[][] novoSpot = getSpots();
+                
+                //Percorre lista de possibilidades e salva linha e coluna do respectivo indice da lista
+                int linha = Integer.parseInt(""+allowedRemoves.get(i).charAt(0));
+                int coluna = Integer.parseInt(""+allowedRemoves.get(i).charAt(2));
+                
+                //remove peça do tabuleiro no spot(linha,coluna) determinado acima
+                novoSpot[linha][coluna] = NewAgent.VAZIO;
+                
+                String novaPecaAlterada = (linha + "," + coluna);
 
-    public void avaliar(boolean isLineInThisMove, GameInfo info){
-        //Instancia um Game Info
-        //GameInfo info = new GameInfo(this.spots);
+                if((info.getOpponentSpots(novoSpot).size() < 3) || (info.getOpponentSpots(novoSpot).size() < 3)){
+                    
+                    EvaluationFunction avaliador = new EvaluationFunction(info, getSpots());
+                    
+                    setAvaliacao(avaliador.vitoria(getJogador()));
+                    
+                }
+                //Senão continua a expandir a arvore normalmente
+                else{
+
+                    //Inverte jogador
+                    int proximoJogador = (getJogador() == NewAgent.JOGADOR) ? NewAgent.OPONENTE : NewAgent.JOGADOR;
+                    
+                    int novaProfundidade = getProfundidade() + 1;
+                    
+                    //Adição do filho gerado na arvore
+                    No noFilho = new No(info, novoSpot, proximoJogador, novaProfundidade, novaPecaAlterada);
+                    filhos.add(noFilho);
+                    
+                }
+            }
+        }
+        else if(!opcoesAdicionarPeca(info).isEmpty()){
+            ////Ternario para verificar de qual jogador deve ser pego os movimentos
+            List<String> allowedSets = opcoesAdicionarPeca(info);
+
+            //Percorre todas opções de remoção de peça, para que seja criado um nó para cada uma
+            for(int i=0; i<allowedSets.size(); i++){
+                
+                //Duplica tabuleiro pai
+                int[][] novoSpot = getSpots();
+                
+                //Salva linha e coluna do respectivo indice da lista
+                int linha = Integer.parseInt(""+allowedSets.get(i).charAt(0));
+                int coluna = Integer.parseInt(""+allowedSets.get(i).charAt(2));
+                
+                //Adiciona peça ao tabuleiro
+                novoSpot[linha][coluna] = getJogador();
+                
+                
+                String novaPecaAlterada = (linha + "," + coluna);
+
+                //Inverte jogador, se for Max agora, será Min na proxima, e vice-versa
+                int proximoJogador = (this.jogador == NewAgent.JOGADOR) ? NewAgent.OPONENTE : NewAgent.JOGADOR;
+                
+                int novaProfundidade = getProfundidade() + 1;
+                
+                //Adição do filho gerado na arvore
+                No noFilho = new No(info, novoSpot, proximoJogador, novaProfundidade, novaPecaAlterada);
+                this.filhos.add(noFilho);
+                
+                      
+            }
+        }
+        //Caso não tenha sido uma jogada que gerou fechamento de um trio(linha) prosseguirá arvore normalmente, gerando filhos baseado nos movimentos possiveis
+        else{
+        
+            ////Ternario para verificar de qual jogador deve ser pego os movimentos
+            List<String> allowedMoves = opcoesMovimentarPeca(info);
+
+            //Percorre lista de movimentos possiveis
+            for(int i=0; i<allowedMoves.size(); i++){
+                //Vetor para armazenar parts da string, caso uma mesma peça possa originar mais de uma jogada
+                String[] parts;
+                
+                /*Part 0 fica com as cordenadas que a peça possui atualmente, enquanto as outras partes(deve haver pelo menos a parte 0 e 1),
+                terão movimentações posseis a partir da cordenada atual*/
+                parts = allowedMoves.get(i).split(";");
+                
+                /*Percorre então 'parts' para adiciar nó para cada jogada derivada da posição atual da peça escolhida na lista de movimentos possivei(allowed moves).
+                Inicia em 1, pois a posição 0 não é um movimento possivel, e sim a posição atual da peça*/
+                for(int j=1; j<parts.length; j++){
+                    
+                    //Duplica spots pai
+                    int[][] novoSpot = getSpots();
+
+                    //Pega posição(linha,coluna) atual da peça
+                    int linha =  Integer.parseInt(""+parts[0].charAt(0));
+                    int coluna = Integer.parseInt(""+parts[0].charAt(2));
+
+                    //Zera a posição, informando que a peça está fazendo um movimento(saiu do lugar)
+                    novoSpot[linha][coluna] = NewAgent.VAZIO;
+
+                    //Pega posição(linha,coluna) para qual a peça irá ir
+                    linha =  Integer.parseInt(""+parts[j].charAt(0));
+                    coluna = Integer.parseInt(""+parts[j].charAt(2)); 
+
+                    //Adiciona a peça com numeração do jogador dono da peça
+                    novoSpot[linha][coluna] = getJogador();
+                    
+                    
+                    String novaPecaAlterada = (linha + "," + coluna);
+                    
+                    //Inverte jogador, se for Max agora, será Min na proxima, e vice-versa
+                    int proximoJogador = (this.jogador == NewAgent.JOGADOR) ? NewAgent.OPONENTE : NewAgent.JOGADOR;
+                    
+                    int novaProfundidade = getProfundidade() + 1;
+                    
+                    //Adição do filho gerado na arvore
+                    No noFilho = new No(info, novoSpot, proximoJogador, novaProfundidade, novaPecaAlterada);
+                    filhos.add(noFilho);
+
+                } 
+            }
+        }
+    }
+    
+    
+    public void avaliar(GameInfo info){
         
         //Instancia a classe de avaliação
-        EvaluationFunction avaliacao = new EvaluationFunction(this.spots);
+        EvaluationFunction avaliacao = new EvaluationFunction(info, getSpots());
         
         //Verifica de quem é a vez de jogar
         //Caso jogador 1, faz as condiçoes baseadas nas informaçoes das peças dele no tabuleiro
         if (getJogador() == NewAgent.JOGADOR){
+            
+            //1 para jogador fechou linha e 0 se não fechou
+            int jogadorQueFechouLinha = info.isPlayerLineOfThree(getPecaAlterada(), getSpots()) ? 1 : 0;
+            
             if ((info.getPiecesToPlace() - profundidade) > 0){
-                this.avaliacao = avaliacao.phase1(isLineInThisMove, NewAgent.JOGADOR, info);
+                this.avaliacao = avaliacao.phase1(jogadorQueFechouLinha);
             }
             else if(info.getPlayerSpots(this.spots).size() > 3){
-                this.avaliacao = avaliacao.phase2(isLineInThisMove, NewAgent.JOGADOR, info);
+                this.avaliacao = avaliacao.phase2(jogadorQueFechouLinha);
             }
             else{
-                this.avaliacao = avaliacao.phase3(isLineInThisMove, NewAgent.JOGADOR, info);
+                this.avaliacao = avaliacao.phase3(jogadorQueFechouLinha);
             }
         }
         //Senão, faz as condiçoes baseadas nas informações das peças do oponente
         else{
-            if ((info.getOpponentPiecesToPlace() - profundidade) > 0){
-                this.avaliacao = avaliacao.phase1(isLineInThisMove, NewAgent.OPONENTE, info);
+            
+            //-1 para oponente fechou linha e 0 se não fechou
+            int jogadorQueFechouLinha = info.isPlayerLineOfThree(getPecaAlterada(), getSpots()) ? -1 : 0;
+            
+            if ((info.getOpponentPiecesToPlace() - getProfundidade()) > 0){
+                this.avaliacao = avaliacao.phase1(jogadorQueFechouLinha);
             }
             else if(info.getOpponentSpots(this.spots).size() > 3){
-                this.avaliacao = avaliacao.phase2(isLineInThisMove, NewAgent.OPONENTE, info);
+                this.avaliacao = avaliacao.phase2(jogadorQueFechouLinha);
             }
             else{
-                this.avaliacao = avaliacao.phase3(isLineInThisMove, NewAgent.OPONENTE, info);
+                this.avaliacao = avaliacao.phase3(jogadorQueFechouLinha);
             }
         }
     }
 
-    public int getJogador() {
-        return jogador;
-    }
 
-    public void setJogador(int jogador) {
-        this.jogador = jogador;
-    }
 }

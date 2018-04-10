@@ -15,57 +15,89 @@ public class NewAgent implements PlayerAgent {
     public static int SET = 1;
     public static int MOVE = 2;
     public static int REMOVE = 3;
+    public static int PROFUNIDADE_MAXIMA = 3;
     
     
 
     @Override
     public String setPiece(GameInfo info) {
         
-        if(info.getEmptySpots().size() == 24){
-            Random random = new Random();
-        
-            int selected = random.nextInt(24);
-        
-            return info.getEmptySpots().get(selected);
+        if(tabuleiroVazio(info)){
+            return primeiraPeca(info);
+        }
+        else{
+            
+            //instancia nova arvore com os parametros necessaríos
+            Arvore arvore = new Arvore(info, SET);
+            
+            return executeMinimax(arvore);
         }
         
-        //Calculo para determinar qual melhor profundidade, para que seja eficiente e sem usar memoria em excesso 
-        int profundidadeMaxima = calculoMelhorProfundidadeArvore(info);
+    }
+    
+    @Override
+    public String movePiece(GameInfo info) {
+       
+        //instancia nova arvore com os parametros necessaríos
+        Arvore arvore = new Arvore(info, MOVE);
+
+        return executeMinimax(arvore);
+
+    }
+
+    @Override
+    public String removePiece(GameInfo info) {
         
         //instancia nova arvore com os parametros necessaríos
-        Arvore arvore = new Arvore(info, profundidadeMaxima, SET);
+        Arvore arvore = new Arvore(info, REMOVE);
+
+        return executeMinimax(arvore);
         
-        int[][] melhorSpot = executeMinimax(arvore);
-        int[][] spot = info.getSpots();
+    }
+    
+    
+    
+    
+    
+    
+    public boolean tabuleiroVazio(GameInfo info){
+        if (info.getEmptySpots().size() == 24){
+            return true;
+        }
         
-        for(int i=0; i<3; i++){
-            for(int j=0; j<8; j++){
-                if((melhorSpot[i][j] == JOGADOR) && (spot[i][j] != JOGADOR)){
-                    return (i + "," + j);
-                }
+        return false;
+    }
+
+    
+    public String primeiraPeca(GameInfo info){
+        Random random = new Random();
+        
+        int selected = random.nextInt(24);
+
+        return info.getEmptySpots().get(selected);
+    }
+    
+    
+    
+    
+    
+   
+       
+       
+    public String executeMinimax(Arvore arvore){
+        
+        int selectedValue = getMinimax( arvore.getNoInicial() );
+        
+        for (No no : arvore.getNoInicial().getFilhos() ){
+            if (no.getAvaliacao() == selectedValue ){
+                return no.getPecaAlterada();
             }
         }
         
         return "";
         
     }
-    
-    public int[][] executeMinimax(Arvore arvore){
-        
-        int selectedValue = getMinimax( arvore.getNoInicial() );
-        
-        for (No no : arvore.getNoInicial().getFilhos() ){
-            if (no.getAvaliacao() == selectedValue ){
-                return no.getSpots();
-            }
-        }
-        
-        
-        return null;
-        
-    }
-    
-    
+
     
     private int getMinimax(No no ){
         
@@ -93,111 +125,47 @@ public class NewAgent implements PlayerAgent {
                 
     }
     
-    public int minimax(No no, int alfa, int beta){
-        if (no.getFilhos() != null && !no.getFilhos().isEmpty()){
-            for(int i=0; i<no.getFilhos().size(); i++){
-                //Verificar se avaliação não é nula
-                if(no.getAvaliacao() != null){
-                    //Se não for nulo, e for impar, é Max
-                    if(isImpar(no.getProfundidade())){
-                        //se avaliação do filho for maior que do pai, pai recebe avaliacao filho
-                        if(no.getAvaliacao() < no.getFilhos().get(i).getAvaliacao()){
-                            no.setAvaliacao(no.getFilhos().get(i).getAvaliacao());
-                        }
-                        
-                        if(no.getAvaliacao() > beta){
-                            i = no.getFilhos().size();
-                        }
-                        if (no.getAvaliacao() > alfa){
-                            alfa = no.getAvaliacao();
-                        }
-                        
-                    }
-                    //Se for par, é Min
-                    else{
-                        //se avaliação do filho for menor que do pai, pai recebe avaliacao filho
-                        if(no.getAvaliacao() > no.getFilhos().get(i).getAvaliacao()){
-                            no.setAvaliacao(no.getFilhos().get(i).getAvaliacao());
-                        }
-                        
-                        if(no.getAvaliacao() < alfa){
-                            i = no.getFilhos().size();
-                        }
-                        if (no.getAvaliacao() < beta){
-                            beta = no.getAvaliacao();
-                        }
-                        
-                    }
-                }
-                else{
-                    no.setAvaliacao(minimax(no.getFilhos().get(i), alfa, beta));
-                    
-                    if(isImpar(no.getProfundidade())){
-                        if(no.getAvaliacao() > beta){
-                            i = no.getFilhos().size();
-                        }
-                        if (no.getAvaliacao() > alfa){
-                            alfa = no.getAvaliacao();
-                        }
-                    }
-                    else{
-                        if(no.getAvaliacao() < alfa){
-                            i = no.getFilhos().size();
-                        }
-                        if (no.getAvaliacao() < beta){
-                            beta = no.getAvaliacao();
-                        }
-                    }    
-                        
-                }
+
+
+    
+    
+    
+    
+    
+    //Função necessaria, pois no caso de getAllowedMoves a função default do List que é size(), não vai retornar o numero total de Moves,
+    //pois pode ter mais de um Move na mesma String da List
+    public int lenghtListMoves(List<String> listString){
+        int count = 0;
+        
+        if( listString != null && !listString.isEmpty()){
+            for (int i=0; i<listString.size(); i++){
+                count += (listString.get(i).length() - 3) / 4;
             }
         }
         
-        return no.getAvaliacao();
-    }
-
-    @Override
-    public String movePiece(GameInfo info) {
-        //Calculo para determinar qual melhor profundidade, para que seja eficiente e sem usar memoria em excesso 
-        int profundidadeMaxima = calculoMelhorProfundidadeArvore(info);
+        return count;
         
-        //instancia nova arvore com os parametros necessaríos
-        Arvore arvore = new Arvore(info, profundidadeMaxima, MOVE);
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String removePiece(GameInfo info) {
-        //Calculo para determinar qual melhor profundidade, para que seja eficiente e sem usar memoria em excesso 
-        int profundidadeMaxima = calculoMelhorProfundidadeArvore(info);
-        
-        //instancia nova arvore com os parametros necessaríos
-        Arvore arvore = new Arvore(info, profundidadeMaxima, REMOVE);
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     
+    public static boolean isImpar(int numero){
+        return (numero % 2) == 1 ? true : false;
+    }
+    
+    
+    public static boolean isPar(int numero){
+        return (numero % 2) == 1 ? true : false;
+    }
+    
+    
+    
+    
+    
+
+ 
+    
+    
+        
     //Calculo para medir possibilidade de aumentar profundidade sem afetar desempenho do jogo
     public int calculoMelhorProfundidadeArvore(GameInfo info){
         //calculo baseado em possibilidades de movimentos do jogador e oponente e na quantidade de peças, quanto menos peças
@@ -219,35 +187,6 @@ public class NewAgent implements PlayerAgent {
         
         return 3;
     }
-    
-    //Função necessaria, pois no caso de getAllowedMoves a função default do List que é size(), não vai retornar o numero total de Moves,
-    //pois pode ter mais de um Move na mesma String da List
-    public int lenghtListMoves(List<String> listString){
-        int count = 0;
-        
-        if( listString != null && !listString.isEmpty()){
-            for (int i=0; i<listString.size(); i++){
-                count += (listString.get(i).length() - 3) / 4;
-            }
-        }
-        
-        return count;
-        
-    }
-    
-    public static boolean isImpar(int numero){
-        return (numero % 2) == 1 ? true : false;
-    }
-    
-    public static boolean isPar(int numero){
-        return (numero % 2) == 1 ? true : false;
-    }
-    
-    private void alpaBetaMinimax (No no, int alfa, int beta){
-        
-    }
 
-    
-       
-    
+
 }

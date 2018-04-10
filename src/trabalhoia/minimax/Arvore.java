@@ -8,24 +8,27 @@ public class Arvore {
     private No noInicial;
     
     public Arvore(GameInfo info, int profundidadeMaxima, int movimento) {
+        
         int profundidade = 0;
-        
         int[][] spots = info.getSpots();
-                
-        boolean isLineInThisMove = false; 
-        if(movimento == NewAgent.SET){
-            isLineInThisMove = false;
-        }
-        else if(movimento == NewAgent.MOVE){
-            isLineInThisMove = false;
-        }
-        else if(movimento == NewAgent.REMOVE){
-            isLineInThisMove = true;
-        }
-        
         int jogador = NewAgent.JOGADOR;
+        String pecaAlterada = "";
  
-        noInicial = new No(info, spots, jogador, profundidadeMaxima, profundidade, isLineInThisMove);
+        noInicial = new No(info, spots, jogador, profundidadeMaxima, profundidade, pecaAlterada);
+    }
+    
+    public Arvore(GameInfo info, int movimento) {
+        
+        int profundidade = 0;
+        int[][] spots = info.getSpots();
+        int jogador = NewAgent.JOGADOR;
+        String pecaAlterada = "";
+        if(movimento == NewAgent.REMOVE){
+            pecaAlterada = "remover";
+        }
+
+ 
+        noInicial = new No(info, spots, jogador, profundidade, pecaAlterada);
     }
 
     public No getNoInicial() {
