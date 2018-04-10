@@ -83,8 +83,8 @@ public final class EvaluationFunction {
             
             /*PlayerSpots retorna as posições das peças do Jogador, a posição consiste em linha e coluna (L,C)
             linha está na posição 0 da String e a coluna na posição 2, pois elas estão separadas por uma Virgula, que está na posição 1*/
-            int linha = playerSpots.get(i).charAt(0);
-            int coluna = playerSpots.get(i).charAt(2);
+            int linha = Integer.parseInt(""+playerSpots.get(i).charAt(0));
+            int coluna = Integer.parseInt(""+playerSpots.get(i).charAt(2));
             
             /*Verificação se a coluna é um numero par, todos numeros pares ficam em cantos, sendo assim não podem
             formar linha no sentido coluna(do centro do tabuleiro para extremidade).*/
@@ -138,8 +138,8 @@ public final class EvaluationFunction {
             
              /*PlayerSpots retorna as posições das peças do Jogador, a posição consiste em linha e coluna (L,C)
             linha está na posição 0 da String e a coluna na posição 2, pois elas estão separadas por uma Virgula, que está na posição 1*/
-            int linha = playerSpots.get(i).charAt(0);
-            int coluna = playerSpots.get(i).charAt(2);
+            int linha = Integer.parseInt(""+playerSpots.get(i).charAt(0));
+            int coluna = Integer.parseInt(""+playerSpots.get(i).charAt(2));
             
             /*Verificação se a coluna é um numero par, todos numeros pares ficam em cantos, sendo assim não podem se
             movimentar no sentido coluna(do centro do tabuleiro para extremidade)*/
@@ -217,8 +217,8 @@ public final class EvaluationFunction {
             
              /*PlayerSpots retorna as posições das peças do Jogador, a posição consiste em linha e coluna (L,C)
             linha está na posição 0 da String e a coluna na posição 2, pois elas estão separadas por uma Virgula, que está na posição 1*/
-            int linha = playerSpots.get(i).charAt(0);
-            int coluna = playerSpots.get(i).charAt(2);
+            int linha = Integer.parseInt(""+playerSpots.get(i).charAt(0));
+            int coluna = Integer.parseInt(""+playerSpots.get(i).charAt(2));
             
             /*Verificação se a coluna é um numero par, todos numeros pares ficam em cantos, sendo assim não podem se
             movimentar no sentido coluna(do centro do tabuleiro para extremidade)*/
@@ -318,8 +318,8 @@ public final class EvaluationFunction {
             
              /*PlayerSpots retorna as posições das peças do Jogador, a posição consiste em linha e coluna (L,C)
             linha está na posição 0 da String e a coluna na posição 2, pois elas estão separadas por uma Virgula, que está na posição 1*/
-            int linha = playerSpots.get(i).charAt(0);
-            int coluna = playerSpots.get(i).charAt(2);
+            int linha = Integer.parseInt(""+playerSpots.get(i).charAt(0));
+            int coluna = Integer.parseInt(""+playerSpots.get(i).charAt(2));
             
             /*Verificação se a coluna é um numero par, todos numeros pares ficam em cantos*/
             if(NewAgent.isPar(coluna)){

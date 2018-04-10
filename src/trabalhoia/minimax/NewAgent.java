@@ -3,6 +3,7 @@ package trabalhoia.minimax;
 import NineMensMorris.GameInfo;
 import NineMensMorris.PlayerAgent;
 import java.util.List;
+import java.util.Random;
 
 
 
@@ -19,6 +20,15 @@ public class NewAgent implements PlayerAgent {
 
     @Override
     public String setPiece(GameInfo info) {
+        
+        if(info.getEmptySpots().size() == 24){
+            Random random = new Random();
+        
+            int selected = random.nextInt(24);
+        
+            return info.getEmptySpots().get(selected);
+        }
+        
         //Calculo para determinar qual melhor profundidade, para que seja eficiente e sem usar memoria em excesso 
         int profundidadeMaxima = calculoMelhorProfundidadeArvore(info);
         
@@ -207,7 +217,7 @@ public class NewAgent implements PlayerAgent {
             profundidadeMaxima = 3;
         }
         
-        return profundidadeMaxima;
+        return 3;
     }
     
     //Função necessaria, pois no caso de getAllowedMoves a função default do List que é size(), não vai retornar o numero total de Moves,

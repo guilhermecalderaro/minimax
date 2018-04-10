@@ -8,7 +8,7 @@ public class Arvore {
     private No noInicial;
     
     public Arvore(GameInfo info, int profundidadeMaxima, int movimento) {
-        int profundidade = -1;
+        int profundidade = 0;
         
         int[][] spots = info.getSpots();
                 
@@ -16,10 +16,10 @@ public class Arvore {
         if(movimento == NewAgent.SET){
             isLineInThisMove = false;
         }
-        if(movimento == NewAgent.MOVE){
+        else if(movimento == NewAgent.MOVE){
             isLineInThisMove = false;
         }
-        if(movimento == NewAgent.REMOVE){
+        else if(movimento == NewAgent.REMOVE){
             isLineInThisMove = true;
         }
         
