@@ -7,29 +7,17 @@ import NineMensMorris.GameInfo;
 public class Arvore {
     private No noInicial;
     
-    public Arvore(GameInfo info, int profundidadeMaxima, int movimento) {
-        
-        int profundidade = 0;
-        int[][] spots = info.getSpots();
-        int jogador = NewAgent.JOGADOR;
-        String pecaAlterada = "";
- 
-        noInicial = new No(info, spots, jogador, profundidadeMaxima, profundidade, pecaAlterada);
-    }
-    
     public Arvore(GameInfo info, int movimento) {
         
-        int profundidade = 0;
+        int profundidade = -1;
         int[][] spots = info.getSpots();
         int jogador = NewAgent.JOGADOR;
-        String pecaAlterada = "";
-        if(movimento == NewAgent.REMOVE){
-            pecaAlterada = "remover";
-        }
-
+        String pecaAlterar = "";
+        int pecasPorColocar = info.getPiecesToPlace() + info.getOpponentPiecesToPlace();
  
-        noInicial = new No(info, spots, jogador, profundidade, pecaAlterada);
+        noInicial = new No(info, spots, jogador, movimento, pecaAlterar, profundidade, pecasPorColocar);
     }
+    
 
     public No getNoInicial() {
         return noInicial;
